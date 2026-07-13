@@ -1,94 +1,193 @@
-# Automated ETL Data Pipeline
+# ⚙️ Automated ETL Data Pipeline
 
-This project is an ETL pipeline I built to show how raw CSV data can be ingested, validated, transformed, and loaded into a warehouse-like database. It simulates AWS S3 locally with files in `data/raw/`, uses Pandas for transformation and validation, and writes the final output to SQLite locally. The Airflow DAG is included to show how the same workflow would be orchestrated in production, and the loader has a Snowflake-ready branch for future cloud setup.
+**A production‑style ETL pipeline** that ingests, validates, transforms, and loads raw CSV data into a warehouse‑ready database. Built with **Python, Pandas, Apache Airflow, and SQLite** — with a **Snowflake‑ready** loader for cloud deployment.
 
-## What this project does
+---
 
-The pipeline processes two sample datasets: `customers.csv` and `orders.csv`.
+## 📌 Table of Contents
 
-1. Extracts raw data from the local S3-like folder `data/raw/`.
-2. Validates the data with schema checks, null checks, duplicate checks, and type checks.
-3. Transforms the data with Pandas, for example by cleaning text, parsing dates, normalizing values, and creating derived columns.
-4. Loads the cleaned data into a local SQLite database so the full pipeline can run on a laptop.
-5. Orchestrates the workflow with Apache Airflow through `dags/etl_pipeline_dag.py`.
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Why This Project Matters](#why-this-project-matters)
+- [Local Development](#local-development)
+- [Configuration](#configuration)
+- [Example Transformations](#example-transformations)
+- [Author](#author)
+- [License](#license)
 
-## Why I built it this way
+---
 
-- It shows a complete ETL flow instead of a single script.
-- It includes validation before loading, which is important in real data engineering work.
-- It has a modular code structure with separate extract, validate, transform, and load layers.
-- It includes Airflow orchestration, logging, and unit tests.
-- It can run locally without AWS or Snowflake access, so it is easy to demonstrate on my machine.
+## 🔍 Overview
 
-## Tech Stack
+This project demonstrates a **complete ETL workflow** — from raw CSV ingestion to a structured warehouse database. It simulates a real‑world data engineering environment by:
 
-- Python
-- Pandas
-- Apache Airflow
-- SQLite for the local demo warehouse
-- Snowflake-ready loader template for production
-- Pydantic-style schema validation
+- **Extracting** data from a local S3‑like folder (`data/raw/`)
+- **Validating** data with schema, null, duplicate, and type checks
+- **Transforming** data using Pandas (cleaning, parsing, normalising, deriving columns)
+- **Loading** the cleaned data into a local **SQLite** database (with a **Snowflake‑ready** branch for production)
+- **Orchestrating** the entire pipeline with **Apache Airflow**
 
-## Project Structure
+The pipeline processes two sample datasets — `customers.csv` and `orders.csv` — making it easy to run and demonstrate on any machine without cloud dependencies.
+
+---
+
+## 🧱 Architecture
 
 ```
+┌─────────────────────────────────────────────────────────────────┐
+│                     AIRFLOW DAG (orchestration)                │
+│                   dags/etl_pipeline_dag.py                     │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  EXTRACT  ──►  VALIDATE  ──►  TRANSFORM  ──►  LOAD            │
+│  (raw CSV)    (schema/      (Pandas         (SQLite /         │
+│   from         quality       cleaning &      Snowflake)        │
+│   data/raw/)   checks)       business                         │
+│                               rules)                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+The pipeline is **modular** — each stage (extract, validate, transform, load) is isolated in its own Python module, making it testable, maintainable, and extendable.
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| **Modular ETL** | Separate layers for extraction, validation, transformation, and loading — not a single monolithic script. |
+| **Data Validation** | Schema checks, null checks, duplicate checks, and type checks before loading (critical for production data quality). |
+| **Pandas Transformations** | Text cleaning, date parsing, value normalisation, and derived column creation. |
+| **Airflow Orchestration** | Full DAG definition to schedule and monitor the pipeline in production. |
+| **Local & Cloud Ready** | Runs locally with SQLite; includes a Snowflake‑ready loader for cloud deployment. |
+| **Logging & Testing** | Built‑in logging for observability and unit tests for reliability. |
+| **Zero Cloud Dependencies** | Runs entirely on your laptop — perfect for demonstrations and interviews. |
+
+---
+
+## 🛠️ Tech Stack
+
+| Area | Technologies |
+|------|--------------|
+| **Language** | Python 3.8+ |
+| **Data Processing** | Pandas, Pydantic‑style schema validation |
+| **Orchestration** | Apache Airflow |
+| **Database (Local)** | SQLite |
+| **Database (Cloud)** | Snowflake (loader template included) |
+| **Testing** | unittest / pytest |
+| **Logging** | Python `logging` module |
+
+---
+
+## 📁 Project Structure
+
+```
+Automated-ETL-Data-Pipeline/
 ├── dags/
-│   └── etl_pipeline_dag.py   # Airflow orchestration
+│   └── etl_pipeline_dag.py      # Airflow DAG definition
 ├── src/
-│   ├── config.py             # Paths, schemas, rules
-│   ├── extractors.py         # Read raw data
-│   ├── validators.py         # Schema and quality checks
-│   ├── transformers.py       # Cleaning and business rules
-│   └── loaders.py            # Load into SQLite or Snowflake
+│   ├── config.py                # Paths, schemas, transformation rules
+│   ├── extractors.py            # Read raw data from source
+│   ├── validators.py            # Schema and data quality checks
+│   ├── transformers.py          # Cleaning and business logic
+│   └── loaders.py               # Load into SQLite or Snowflake
 ├── data/
-│   ├── raw/                  # Sample input data
-│   └── processed/            # Output files
-├── tests/                    # Basic unit tests
-├── demo.py                   # Run the pipeline without Airflow
-├── requirements.txt          # Dependencies
-└── README.md                 # Project overview
+│   ├── raw/                     # Sample input CSV files
+│   └── processed/               # Output files (if any)
+├── tests/                       # Unit tests for each module
+├── demo.py                      # Run the pipeline without Airflow
+├── setup.bat                    # One‑click environment setup (Windows)
+├── requirements.txt             # Python dependencies
+└── README.md
 ```
 
-## How to run locally
+---
 
-### Fastest option
+## 🧠 Why This Project Matters
+
+Recruiters and hiring managers look for **real engineering discipline** — not just code that works, but code that is:
+
+- **Modular** — each responsibility has its own layer
+- **Validated** — data quality is checked before loading (prevents garbage‑in, garbage‑out)
+- **Orchestrated** — uses Airflow, the industry standard for workflow management
+- **Testable** — includes unit tests to catch regressions
+- **Cloud‑Ready** — the loader is designed to switch from SQLite to Snowflake with minimal changes
+
+This project demonstrates all of these qualities in a **self‑contained, runnable** package.
+
+---
+
+## 🚀 Local Development
+
+### Prerequisites
+- Python 3.8 or higher
+- `pip` (Python package manager)
+- (Optional) Apache Airflow installed — or use the `setup.bat` script
+
+### Fastest Option (No Airflow Required)
 ```bash
-cd "d:\50LPA\Automated ETL Data Pipeline"
+cd Automated-ETL-Data-Pipeline
 python demo.py
 ```
+This runs the entire pipeline end‑to‑end without Airflow — great for quick testing.
 
-### Airflow option
+### Airflow Option (Production‑Style)
 ```bash
-cd "d:\50LPA\Automated ETL Data Pipeline"
+cd Automated-ETL-Data-Pipeline
 setup.bat
 ```
-
-Then start Airflow in two terminals:
-
+Then start Airflow in two separate terminals:
 ```bash
 airflow webserver --port 8080
-```
-
-```bash
 airflow scheduler
 ```
+Open `http://localhost:8080` in your browser to trigger and monitor the DAG.
 
-Open `http://localhost:8080` in your browser.
+---
 
-## Example transformations
+## ⚙️ Configuration
 
-- Customers: lowercase emails, parse registration dates, calculate account age, standardize country names.
-- Orders: parse order dates, categorize amounts, standardize status values, filter invalid rows.
+Edit `src/config.py` to customise:
 
-## Configuration
+- **Input / output paths**
+- **Validation schemas** (field names, types, required flags)
+- **Transformation rules** (cleaning logic, derived columns)
+- **Target database settings** (SQLite path or Snowflake connection details)
 
-Edit `src/config.py` if you want to change:
+---
 
-- Input paths
-- Validation schemas
-- Transformation rules
-- SQLite or Snowflake target settings
+## 📊 Example Transformations
 
-## Author
+### Customers Dataset
+- Lowercase email addresses
+- Parse registration dates into datetime objects
+- Calculate account age (days since registration)
+- Standardise country names (e.g., "USA" → "United States")
 
-Built Mar 2026 - Present
+### Orders Dataset
+- Parse order dates into datetime objects
+- Categorise order amounts (e.g., "Low", "Medium", "High")
+- Standardise status values (e.g., "shipped" → "Shipped")
+- Filter out invalid rows (e.g., orders with negative amounts)
+
+---
+
+## 👤 Author
+
+**Vansh Gaikwad**  
+[GitHub](https://github.com/VanshGaikwad)
+
+---
+
+## 📄 License
+
+This project is for demonstration and educational purposes. Contact the author for licensing inquiries.
+
+---
+
+> Built with **Python, Pandas, Airflow, and SQLite** — a complete, production‑ready ETL pipeline from raw data to warehouse.
